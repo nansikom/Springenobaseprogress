@@ -1,0 +1,86 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <style>
+        #main-header {
+            width: 100%;  /* Full width */
+            background: #1B1B1B; /* Dark background */
+            padding: 16px 0;  /* Top and bottom padding */
+            text-align:center; /* Center the nav links horizontally */
+        }
+        #main-header nav a{
+            color: #fff;
+            text-decoration: none; /* to remove underline */
+            margin: 0 18px ; /* Space between links 18px*/
+        }
+        #hero-image {
+            max-width: 900px; /* Set a max width */
+            max-height: 1000px; /* Set a max height */
+            width:100%; /* Full width */
+            height:auto; /* Full height */
+            object-fit:cover; /* Cover the entire area nicely */
+            border-radius: 10px;
+        }
+        #hero-image-container {
+            display: flex; /* Use flexbox */
+            justify-content: flex-end; /* Center the image horizontally */
+            align-items: center; /* Center the image vertically */
+        }
+        #story{
+            font-family:  'Montserrat' , sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color:#1b1b1be1;
+            line-height: 1.8;
+            max-width: 500px; /* Set a max width for readability */
+            margin-left:0vw; /* Space from the left edge */
+            padding-right: 15px;
+    
+        }
+        #main-content{
+            display: flex;
+            flex-direction: row;
+            align-items:center;
+            justify-content: space-between;
+            min-height:80vh;
+            width:100%;
+            gap:40px;
+            box-sizing: border-box;
+            padding: 0 5vw;
+            margin-top:40px;
+        }
+        #story b{
+            color: #6c47ff;
+            font-weight: 900;
+        }
+       
+    </style>       
+</head>
+<body>     
+    <header id="main-header">
+        <nav>
+            <a href="indie.html">Home</a>
+            <a href="index.html">Code editing</a>
+            <a href="Dashboard and Visualisation">Visualisation</a>
+            <a href="Predictions">Predictions</a>
+            <a href="Summary report">Summary</a>
+        </nav>
+
+    </header>
+    <div id="main-content">  
+        <div id="story">
+            Unlock the power of your business data with <b>Mona</b> the business formula engine built by business users, for business users. Effortlessly analyze, grow, and get AI-driven insights to take your business to the next level.
+            </div>
+          
+        <div id ="hero-image-container">
+            <img src ="assets/hero.png" alt="Hero" id ="hero-image">
+    </div>
+    </div>
+    </body>
+   
+</body>
+</html>
