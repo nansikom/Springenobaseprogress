@@ -1,10 +1,19 @@
-const express = require('express');
-const { Client } = require('pg');
-const cors = require('cors');
-
+//const express = require('express');
+import express from 'express';
+//const express = require('express');
+import cors from 'cors';
+import axios from 'axios';
+//const cors = require('cors');
+import pg from 'pg';
 const app = express();
+const { Client } = pg
+
 app.use(cors());
+//const { Client } = require('pg');
+//const axios = require('axios');
+//const genai = require('genai');
 app.use(express.json());
+let uploadedData = [];
 
 // PostgreSQL connection
 const client = new Client({
@@ -76,7 +85,7 @@ app.post('/dynamic_query', async (req, res) => {
     }
   });
   
-  
+ 
 
 // Start the server
 const PORT = 3000;
