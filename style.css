@@ -1,0 +1,88 @@
+:root {
+  --thistle: #cdb4db;
+  --fairy-tale: #ffc8dd;
+  --carnation-pink: #ffafcc;
+  --uranian-blue: #bde0fe;
+  --light-sky-blue: #a2d2ff;
+  --mimi-pink: #ffd6ffff;
+  --mauve: #e7c6ffff;
+  --mauve-2: #c8b6ffff;
+  --periwinkle: #b8c0ffff;
+  --periwinkle-2: #bbd0ffff;
+}
+
+body {
+  background-color: var(white);
+  font-family: 'Arial', sans-serif;
+}
+/* Table background and text color */
+.handsontable .ht_master {
+  background-color: var(--mauve-2);
+  color: #333;
+}
+
+/* Header cells */
+.handsontable th {
+  background-color: var(--mauve-2);
+  color: #333;
+  font-weight: bold;
+  border-bottom: 2px solid var(--carnation-pink);
+}
+
+/* Regular cells */
+.handsontable td {
+  background-color: var(--mauve);
+  border: 1px solid var(--thistle);
+
+  color: #333;
+}
+
+/* Highlight selected cell */
+.handsontable .current {
+  background-color: var(--carnation-pink);
+  color: black;
+}
+
+/* Row highlight on hover */
+.handsontable tbody tr:hover {
+  background-color: var(--fairy-tale);
+}
+:root {
+  --mauve: #e7c6ff;
+  --mauve-2: #c8b6ff;
+  --text-dark: #3b2f4d;
+}
+
+.button {
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  color:black;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.button-mauve {
+  background-color: var(--mauve);
+  color: black;
+}
+
+.button-mauve:hover {
+  background-color: var(--mauve-2);
+  transform: translateY(-2px);
+}
+
+.custom-file-label {
+    display: inline-block;
+    padding: 8px 16px;
+    background: var(--mauve);
+    color:black;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-right: 10px;
+    font-weight: bold;
+}

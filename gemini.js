@@ -1,4 +1,4 @@
-import express from'express';
+import express from 'express';
 //const { Client } = require('pg');
 import cors from 'cors';
 import axios from 'axios';
@@ -18,6 +18,7 @@ You are an AI assistant designed to interpret user input and generate JavaScript
 The dataset is an array of objects, and the JavaScript functions should perform the requested operations on this dataset.
 
 Always return the JavaScript function as a string that can be directly copied and executed. Do not include any explanations or additional text.
+Always answer the users question even when the question is not related to answering javascript code.
 
 ### Example Dataset:
 [

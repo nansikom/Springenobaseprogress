@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "item_name": "Laptop",
+    "price": 1200.50,
+    "category": "Electronics"
+  },
+  {
+    "id": 2,
+    "item_name": "Smartphone",
+    "price": 899.99,
+    "category": "Electronics"
+  },
+  {
+    "id": 3,
+    "item_name": "Desk Chair",
+    "price": 150.00,
+    "category": "Furniture"
+  },
+  {
+    "id": 4,
+    "item_name": "Bluetooth Speaker",
+    "price": 85.75,
+    "category": "Audio"
+  },
+  {
+    "id": 5,
+    "item_name": "Coffee Maker",
+    "price": 79.95,
+    "category": "Appliances"
+  },
+  {
+    "id": 6,
+    "item_name": "Notebook",
+    "price": 3.50,
+    "category": "Stationery"
+  },
+  {
+    "id": 7,
+    "item_name": "Wireless Mouse",
+    "price": 25.99,
+    "category": "Accessories"
+  },
+  {
+    "id": 8,
+    "item_name": "Monitor",
+    "price": 220.00,
+    "category": "Electronics"
+  },
+  {
+    "id": 9,
+    "item_name": "Backpack",
+    "price": 49.99,
+    "category": "Bags"
+  },
+  {
+    "id": 10,
+    "item_name": "LED Desk Lamp",
+    "price": 35.20,
+    "category": "Lighting"
+  }
+]
