@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLV8 JavaScript Executor</title>
+    <link rel = "stylesheet" href ="https://cdn.jsdelivr.net/npm/handsontable@14.3.0/dist/handsontable.full.min.css">
+    <script src = "https://cdn.jsdelivr.net/npm/handsontable@14.3.0/dist/handsontable.full.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/monaco-editor@0.34.1/min/vs/editor/editor.main.css">
+    <link rel = "stylesheet" href="style.css">
+    <style>
+       
+        #container {
+            display: flex;
+            height: 100vh;
+        }
+       
+        
+        #controls {
+            margin-top: 10px;
+        }
+        .grid-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-start;
+            min-height: 100vh;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        #hot {
+            width: 80vw;
+            max-width: 900px;
+            margin: 40px auto;
+            background:white;
+            border-radius: 12px;
+            padding: 24px 16px;
+            min-height: 350px;
+            width: 45vw;
+
+        }
+        
+        .upload-dataset-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap:10px;
+            margin-top: 10px;
+        }
+         
+    </style>
+</head>
+<body>
+       
+        <!-- Tabulator Table Section -->
+        <div id="table-container" class="grid-container">
+            <div id="hot"></div>
+                <div class="upload-dataset-container">
+                    <h3>Upload Dataset</h3>
+                    <h3>Charts and visualisations</h3>
+                    <input type="file" id="datasetFile" accept=".json,.csv" onchange="uploadDataset()" style="display:none">
+                    <label for ="datasetFile" class="custom-file-label">Choose dataset</label>
+                    <span id="fileName"></span>
+                    <button class=" button button-mauve" onclick = "sortascending()">SortAscending</button> 
+                    <button class= "button button-mauve" onclick = "sortdescending()">SortDescending</button><br>
+                </div>
+
+
+        </div>
+        <script>
+            let dataset = []; 
+            let hotInstance = null;
+           
+            
+            function uploadDataset() {
+                const fileInput = document.getElementById('datasetFile');
+                const file = fileInput.files[0];
+
+                if (!file) {
+                    alert('Please select a file.');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    try {
+                        let data;
+                        if(file.name.endsWith('.json')){
+                          data = JSON.parse(event.target.result);
+                        }
+                        else if (file.name.endsWith('.csv')){
+                            data=csvToJson(event.target.result);
+                        }
+                        else{
+                            throw new Error('Unsupported file format. Please upload a JSON or CSV file.');
+                        }
+                        dataset = data
+                        alert('Dataset uploaded successfully!');
+                        renderTable(dataset); 
+                    } catch (error) {
+                        alert('Invalid JSON file. Please upload a valid JSON dataset.');
+                    }
+                };
+                reader.readAsText(file); 
+            }
+            function renderTable(data) {
+                const container = document.getElementById('hot');
+                const columns = data.length > 0 ? Object.keys(data[0]) :[];
+                const hotData = data.map(row => columns.map(col => row[col]));
+
+
+                if (hotInstance) {
+                    hotInstance.destroy()
+                }
+
+
+                hotInstance= new Handsontable(container, {
+                    data: hotData, 
+                    colHeaders: columns.map(col => col.replace(/_/g, ' ').toUpperCase()), 
+                    rowHeaders: true, 
+                    stretcghH: 'all', 
+                    width: '100%', 
+                    height: 400, 
+                    licenseKey: 'non-commercial-and-evaluation', 
+                    manualColumnResize: true, 
+                    manualRowResize: true, 
+                    filters: true,
+                    dropdownMenu: true, 
+                });
+            }  
+
+            
+            
+            async function executeCode() {
+                const userCode = window.editor.getValue(); 
+
+                if (!dataset || dataset.length === 0) {
+                    alert('Please upload a dataset first.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('http://localhost:3001/run-js', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ userCode, dataset })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to execute code');
+                    }
+
+                    const data = await response.json();
+                    document.getElementById('result').innerText = 'Result: ' + JSON.stringify(data.result, null, 2);
+
+                    alert('Code executed successfully! Check the console for results.');
+                    console.log('Result:', data.result);
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error: ' + error.message);
+                }
+            }
+            function sortascending() {
+                if (!dataset || dataset.length === 0) {
+                    alert('Please upload a dataset first.');
+                    return;
+                }
+                dataset.sort((a, b) => a.price - b.price);
+                renderTable(dataset); 
+            }
+            function sortdescending() {
+                if (!dataset || dataset.length === 0) {
+                    alert('Please upload a dataset first.');
+                    return;
+                }
+                dataset.sort((a, b) => b.price - a.price); 
+                renderTable(dataset); 
+            }
+            function csvToJson(csv){
+                const lines= csv.trim().split('\n');
+                const headers= lines[0].split(',').map(h=> h.trim());
+                return lines.slice(1).map(line=>{
+                    const values= line.split(',').map(v=> v.trim());
+                    const obj={};
+                    headers.forEach((header, index)=>{
+                        obj[header]= values[index];
+                    });
+                    return obj;
+                });
+            }
+    
+
+        </script>
+</body>
+</html>
+    
+
+    
