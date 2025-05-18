@@ -1,177 +1,278 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Retail Data Frontend</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLV8 JavaScript Executor</title>
+    <link rel = "stylesheet" href ="https://cdn.jsdelivr.net/npm/handsontable@14.3.0/dist/handsontable.full.min.css">
+    <script src = "https://cdn.jsdelivr.net/npm/handsontable@14.3.0/dist/handsontable.full.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/monaco-editor@0.34.1/min/vs/editor/editor.main.css">
+    <script src="https://unpkg.com/monaco-editor@0.34.1/min/vs/loader.js"></script>
+    <link rel = "stylesheet" href="style.css">
+    <style>
+       
+        #container {
+            display: flex;
+            height: 100vh;
+        }
+        #editor-container {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #ccc;
+            padding: 10px;
+            width:500px;
+            min-width:350px;
+            max-width: 600px;
+            background: white;
+        }
+        #editor {
+            border: 1px solid #ccc;
+            height: 600px;
+            min-height:400px;
+            border-radius: 12px;
+            width:100%;
+            background-color:#1B1B1B;
+        }
+        #controls {
+            margin-top: 10px;
+        }
+        .grid-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-start;
+            min-height: 100vh;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        #hot {
+            width: 80vw;
+            max-width: 900px;
+            margin: 40px auto;
+            background:white;
+            border-radius: 12px;
+            padding: 24px 16px;
+            min-height: 350px;
+            width: 45vw;
 
-  <!-- Tabulator CSS -->
-  <link href="https://unpkg.com/tabulator-tables@5.4.3/dist/css/tabulator.min.css" rel="stylesheet">
+        }
+        .editor-box{
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgb(0, 0, 0);
+            padding: 24px 16px;
+            min-height: 400px;
+            margin-bottom: 24px;
+            width: 50vw;
+            max-width: 900px;
+            margin: 40px auto;
+            overflow:hidden;
 
-
-  <script src="https://unpkg.com/tabulator-tables@5.4.3/dist/js/tabulator.min.js"></script>
-
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
- 
-  <style>
-    /* Optional: Add some spacing */
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-
-
-    #example-table {
-      margin-top: 20px;
-      height: 300px; /* Required for Tabulator to display properly */
-    }
-
-
-    /* Custom header styles */
-    .tabulator-header {
-      background-color: black;
-      color: white;
-    }
-
-
-    .tabulator-header .tabulator-col {
-      color: white;
-    }
-  </style>
+        }
+        .upload-dataset-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap:10px;
+            margin-top: 10px;
+        }
+         
+    </style>
 </head>
 <body>
-  <div id ="chat-container" style="margin-top:20px; border: 1px solid black; border-radius:10px; padding:10px; max-width:500px;">
-    <h2>Chat with Gemini</h2>
-    <div id = "chat-messages" styles="height:300px; overflow-y:auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; background-color: #f9f9f9;">
-  </div>
-  <div style = "display: flex;">
-    <input
-     type = "text"
-     id = "chat-input"
-     placeholder="Type your message here..."
-     style = "flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-right: 10px;"/>
-     <!-- margin right is for space -->
-     <!--flex: 1 is for input to take all space -->
-     <!--margin bottom is for some space below-->
-     <!--if the content overflows, a verticl scrollbar will be added-->
-    <button
-      id = "send-button"
-      style = "padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
-        Send
-    </button>
+    <div id="container">
+        <!-- Monaco Editor Section -->
+
+        <div id="editor-container">
+            <h2>Paste Code in the monaco editor </h2>  
+              <div id="editor"></div>
+           
+            <div id="controls">
+                        
+            
+            <div id ="chat-container" style="margin-top:20px; border: 1px solid black; border-radius:10px; padding:10px; max-width:500px;">
+            <h2>Use Gemini to assist in writing JS code</h2>
+            <div id = "chat-messages" styles="height:300px; overflow-y:auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; background-color: #f9f9f9;">
+            </div>
+        <div style = "display: flex;">
+            <input
+            type = "text"
+            id = "chat-input"
+            placeholder="Type your message here..."
+            style = "flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-right: 10px;"/>
+            <!-- margin right is for space -->
+            <!--flex: 1 is for input to take all space -->
+            <!--margin bottom is for some space below-->
+            <!--if the content overflows, a verticl scrollbar will be added-->
+            <button id = "send-button"
+            style = "padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                Send
+            </button>
+            </div>
+    </div>
+           
+              
+                <button class="button button-mauve" onclick="executeCode()">Run Code</button>
+                <h3>Result:</h3>
+                <div id="result" style="white-space: pre-wrap; 
+                                        background:#c8b6ffff; 
+                                        padding: 10px;
+                                        display: inline-block;
+                                        width: auto;
+                                        max-width:90vw;
+                                        min-width:100px;
+                                        margin:0 auto;
+                                         border-radius: 5px;"></div>
     </div>
   
   </div>
-  
-
-  <h1>Retail Data Frontend</h1>
-
-
-  <!-- File Input for CSV Upload -->
-  <input type="file" id="csv-file" accept=".csv" />
-  <button onclick="loadCSVData()">Load Data</button>
- 
-  <!-- Tabulator Table -->
-  <div id="example-table"></div>
-  <h2>Sort data</h2>
-  <button onclick="sortData()">sortData</button>
-  <p id="sort-data"></p>
-  <!-- JavaScript -->
-  <script>
-    let table = null; // Global variable to hold the Tabulator instance
-    let tableData = []; // Global variable to hold the table data
-    // Function to load and display CSV data into Tabulator
-    function loadCSVData() {
-      const fileInput = document.getElementById('csv-file');
-      const file = fileInput.files[0];
+               
+        <!-- Tabulator Table Section -->
+        <div id="table-container" class="grid-container">
+            <div id="hot"></div>
+                <div class="upload-dataset-container">
+                    <h3>Upload Dataset</h3>
+                    <input type="file" id="datasetFile" accept=".json,.csv" onchange="uploadDataset()" style="display:none">
+                    <label for ="datasetFile" class="custom-file-label">Choose dataset</label>
+                    <span id="fileName"></span>
+                    <button class=" button button-mauve" onclick = "sortascending()">SortAscending</button> 
+                    <button class= "button button-mauve" onclick = "sortdescending()">SortDescending</button><br>
+                </div>
 
 
-      if (file) {
-        // Parse CSV file
-        Papa.parse(file, {
-          complete: function(results) {
-            console.log("Parsed CSV data:", results.data); // Debugging: Check the parsed data
+        </div>
+        <script>
+            let dataset = []; 
+            let hotInstance = null;
+           
+            require.config({ paths: { 'vs': 'https://unpkg.com/monaco-editor@0.34.1/min/vs' } });
+            require(['vs/editor/editor.main'], function () {
+                window.editor = monaco.editor.create(document.getElementById('editor'), {
+                    value: `// Example: Calculate total price\nreturn dataset.reduce((total, item) => total + item.price, 0);`,
+                    language: 'javascript',
+                    theme: 'vs-dark',
+                    fontSize: 16,
+                    automaticLayout: true,
+                });
+            });
+            function uploadDataset() {
+                const fileInput = document.getElementById('datasetFile');
+                const file = fileInput.files[0];
 
-
-            // Check if data is valid
-            if (results.data && results.data.length > 0) {
-              // Dynamically map CSV data (assume dynamic structure with flexible column names)
-               tableData = results.data.map(row => {
-                return Object.fromEntries(Object.entries(row).map(([key, value]) => {
-                  // Convert all numerical fields to number (like 'Qty', 'Price', etc.)
-                  if (!isNaN(value)) {
-                    return [key, parseFloat(value)];
-                  }
-                  return [key, value];
-                }));
-              });
-
-
-              console.log("Mapped dynamic table data:", tableData); // Debugging: Check the mapped data
-              // If the table is already initialized, destroy it and create a new one
-              sendDataToBackend(); // Send data to backend
-              if (table) {
-                table.destroy();
-              }
-              if (typeof Tabulator == 'undefined') {
-                    console.error('Tabulator library is not loaded');
+                if (!file) {
+                    alert('Please select a file.');
                     return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    try {
+                        let data;
+                        if(file.name.endsWith('.json')){
+                          data = JSON.parse(event.target.result);
+                        }
+                        else if (file.name.endsWith('.csv')){
+                            data=csvToJson(event.target.result);
+                        }
+                        else{
+                            throw new Error('Unsupported file format. Please upload a JSON or CSV file.');
+                        }
+                        dataset = data
+                        alert('Dataset uploaded successfully!');
+                        renderTable(dataset); 
+                    } catch (error) {
+                        alert('Invalid JSON file. Please upload a valid JSON dataset.');
+                    }
+                };
+                reader.readAsText(file); 
+            }
+            function renderTable(data) {
+                const container = document.getElementById('hot');
+                const columns = data.length > 0 ? Object.keys(data[0]) :[];
+                const hotData = data.map(row => columns.map(col => row[col]));
+
+
+                if (hotInstance) {
+                    hotInstance.destroy()
+                }
+
+
+                hotInstance= new Handsontable(container, {
+                    data: hotData, 
+                    colHeaders: columns.map(col => col.replace(/_/g, ' ').toUpperCase()), 
+                    rowHeaders: true, 
+                    stretcghH: 'all', 
+                    width: '100%', 
+                    height: 400, 
+                    licenseKey: 'non-commercial-and-evaluation', 
+                    manualColumnResize: true, 
+                    manualRowResize: true, 
+                    filters: true,
+                    dropdownMenu: true, 
+                });
+            }  
+
+            
+            
+            async function executeCode() {
+                const userCode = window.editor.getValue(); 
+
+                if (!dataset || dataset.length === 0) {
+                    alert('Please upload a dataset first.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('http://localhost:3001/run-js', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ userCode, dataset })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to execute code');
                     }
 
+                    const data = await response.json();
+                    document.getElementById('result').innerText = 'Result: ' + JSON.stringify(data.result, null, 2);
 
-              // Initialize Tabulator Table with dynamically loaded data
-              table = new Tabulator("#example-table", {
-                data: tableData,
-                layout: "fitColumns",
-                columns: generateColumnsFromData(tableData),
-              });
-            } else {
-              console.error("No valid data found in CSV.");
+                    alert('Code executed successfully! Check the console for results.');
+                    console.log('Result:', data.result);
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error: ' + error.message);
+                }
             }
-          },
-          header: true, // Treat first row as header
-          skipEmptyLines: true, // Skip empty lines in CSV
-        });
-      } else {
-        console.error("No file selected.");
-      }
-    }
-
-
-    // Function to generate table columns based on data keys dynamically
-    function generateColumnsFromData(data) {
-      if (data.length > 0) {
-        const columns = Object.keys(data[0]).map(key => ({
-          title: key,     // Use key as column title
-          field: key,     // Use key as field
-          editor: "input", // Allow inline editing
-        }));
-        // Add calculated 'Total' column
-        
-        return columns;
-      }
-      return [];
-    }
-    async function sendDataToBackend(){
-      if (tableData.length === 0) {
-        console.error("No data available to send.");
-        return;
-      }
-      try {
-        const response = await fetch('http://localhost:5001/upload-data', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ data: tableData })
-        });
-        const result = await response.json();
-        console.log("Data sent successfully:", result);
-      } catch (error) {
-        console.error("Error sending data:", error);
-      }
-    }
+            function sortascending() {
+                if (!dataset || dataset.length === 0) {
+                    alert('Please upload a dataset first.');
+                    return;
+                }
+                dataset.sort((a, b) => a.price - b.price);
+                renderTable(dataset); 
+            }
+            function sortdescending() {
+                if (!dataset || dataset.length === 0) {
+                    alert('Please upload a dataset first.');
+                    return;
+                }
+                dataset.sort((a, b) => b.price - a.price); 
+                renderTable(dataset); 
+            }
+            function csvToJson(csv){
+                const lines= csv.trim().split('\n');
+                const headers= lines[0].split(',').map(h=> h.trim());
+                return lines.slice(1).map(line=>{
+                    const values= line.split(',').map(v=> v.trim());
+                    const obj={};
+                    headers.forEach((header, index)=>{
+                        obj[header]= values[index];
+                    });
+                    return obj;
+                });
+            }
     const chatMessages = document.getElementById('chat-messages');
     const chatInput = document.getElementById('chat-input');
     const sendButton = document.getElementById('send-button');
@@ -212,51 +313,10 @@
       }
     });
 
-    async function sortData() {
-      const payload = {
-      tbl_name: 'sales_data',
-      select_cols: ['customer_name', 'total_spent', 'region'],
-      where_clause: "region = 'West'",
-      sort_col: 'total_spent',
-      sort_order: 'DESC',
-      limit_num: 3
-    };
-      const response = await fetch('http://localhost:3000/dynamic_query',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
-   
-      const data = await response.json();
-      document.getElementById('sort-data').innerText = JSON.stringify(data, null, 2); // Display the result in a readable format
-      console.log("Sorted data:", data); // Debugging: Check the sorted data
-    }
-    function sortData(){
-      if (!tableData || tableData.length === 0) {
-        console.error("No data available to sort.");
-        return;
-      }
-      const sortedData = [...tableData].sort((a, b) => {
-        return b.total_spent - a.total_spent; // Sort by 'total' field
-        table.setData(sortedData); // Update the table with sorted data
-        document.getElementById('sort-data').innerText = JSON.stringify(sortedData, null, 2); // Display the sorted data in a readable format
-        console.log("Sorted data:", sortedData); // Debugging: Check the sorted data
-      });
-    }
-    // Function to handle chat input and send message to server
-   
 
-  </script>
-
-
+        </script>
 </body>
 </html>
+    
 
-
-
-
-
-
+    
