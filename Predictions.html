@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLV8 JavaScript Executor</title>
+    <link rel = "stylesheet" href ="https://cdn.jsdelivr.net/npm/handsontable@14.3.0/dist/handsontable.full.min.css">
+    <script src = "https://cdn.jsdelivr.net/npm/handsontable@14.3.0/dist/handsontable.full.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/monaco-editor@0.34.1/min/vs/editor/editor.main.css">
+    <script src="https://unpkg.com/monaco-editor@0.34.1/min/vs/loader.js"></script>
+    <link rel = "stylesheet" href="style.css">
+    <style>
+       
+        #container {
+            display: flex;
+            height: 100vh;
+        }
+        #editor-container {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #ccc;
+            padding: 10px;
+            width:500px;
+            min-width:350px;
+            max-width: 600px;
+            background: white;
+        }
+        #editor {
+            border: 1px solid #ccc;
+            height: 600px;
+            min-height:400px;
+            border-radius: 12px;
+            width:100%;
+            background-color:#1B1B1B;
+        }
+        #controls {
+            margin-top: 10px;
+        }
+        .grid-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-start;
+            min-height: 100vh;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        #hot {
+            width: 80vw;
+            max-width: 900px;
+            margin: 40px auto;
+            background:white;
+            border-radius: 12px;
+            padding: 24px 16px;
+            min-height: 350px;
+            width: 45vw;
+
+        }
+        .editor-box{
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgb(0, 0, 0);
+            padding: 24px 16px;
+            min-height: 400px;
+            margin-bottom: 24px;
+            width: 50vw;
+            max-width: 900px;
+            margin: 40px auto;
+            overflow:hidden;
+
+        }
+        .upload-dataset-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap:10px;
+            margin-top: 10px;
+        }
+         
+    </style>
+</head>
+<body>
+    <button onclick="runlinearregression()">Run Linear Regression</button>
+    <button onclick="runhistoricalaverage()">Run average </button>
+    <button onclick="runclustering()">Run Clustering</button>
+    <button onclick="runanomalydetection()">Run anomaly</button>
+    <select id = "columnSelector"></select>
+
+    <div id="container">
+        <!-- Monaco Editor Section -->
+
+        <div id="editor-container">
+            <h2>Paste Code in the monaco editor </h2>  
+              <div id="editor"></div>
+           
+            <div id="controls">
+                        
+            
+            <div id ="chat-container" style="margin-top:20px; border: 1px solid black; border-radius:10px; padding:10px; max-width:500px;">
+            <h2>Use Gemini to assist in writing JS code</h2>
+            <div id = "chat-messages" styles="height:300px; overflow-y:auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; background-color: #f9f9f9;">
+            </div>
+        <div style = "display: flex;">
+            <input
+            type = "text"
+            id = "chat-input"
+            placeholder="Type your message here..."
+            style = "flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-right: 10px;"/>
+            <!-- margin right is for space -->
+            <!--flex: 1 is for input to take all space -->
+            <!--margin bottom is for some space below-->
+            <!--if the content overflows, a verticl scrollbar will be added-->
+            <button id = "send-button"
+            style = "padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                Send
+            </button>
+            </div>
+    </div>
+           
+              
+                <button class="button button-mauve" onclick="executeCode()">Run Code</button>
+                <h3>Result:</h3>
+                <div id="result" style="white-space: pre-wrap; 
+                                        background:#c8b6ffff; 
+                                        padding: 10px;
+                                        display: inline-block;
+                                        width: auto;
+                                        max-width:90vw;
+                                        min-width:100px;
+                                        margin:0 auto;
+                                         border-radius: 5px;"></div>
+    </div>
+  
+  </div>
+               
+        <!-- Tabulator Table Section -->
+        <div id="table-container" class="grid-container">
+            <div id="hot"></div>
+                <div class="upload-dataset-container">
+                    <h3>Upload Dataset</h3>
+                    <input type="file" id="datasetFile" accept=".json,.csv" onchange="uploadDataset()" style="display:none">
+                    <label for ="datasetFile" class="custom-file-label">Choose dataset</label>
+                    <span id="fileName"></span>
+                    <button class=" button button-mauve" onclick = "sortascending()">SortAscending</button> 
+                    <button class= "button button-mauve" onclick = "sortdescending()">SortDescending</button><br>
+                </div>
+
+
+        </div>
+        <script>
+            let dataset = []; 
+            let hotInstance = null;
+           
+            require.config({ paths: { 'vs': 'https://unpkg.com/monaco-editor@0.34.1/min/vs' } });
+            require(['vs/editor/editor.main'], function () {
+                window.editor = monaco.editor.create(document.getElementById('editor'), {
+                    value: `// Example: Calculate total price\nreturn dataset.reduce((total, item) => total + item.price, 0);`,
+                    language: 'javascript',
+                    theme: 'vs-dark',
+                    fontSize: 16,
+                    automaticLayout: true,
+                });
+            });
+            function uploadDataset() {
+                const fileInput = document.getElementById('datasetFile');
+                const file = fileInput.files[0];
+
+                if (!file) {
+                    alert('Please select a file.');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    try {
+                        let data;
+                        if(file.name.endsWith('.json')){
+                          data = JSON.parse(event.target.result);
+                        }
+                        else if (file.name.endsWith('.csv')){
+                            data=csvToJson(event.target.result);
+                        }
+                        else{
+                            throw new Error('Unsupported file format. Please upload a JSON or CSV file.');
+                        }
+                        dataset = data
+                        alert('Dataset uploaded successfully!');
+                        renderTable(dataset); 
+                        populateColumnSelector(dataset);
+                    } catch (error) {
+                        alert('Invalid JSON file. Please upload a valid JSON dataset.');
+                    }
+                };
+                reader.readAsText(file); 
+            }
+            function renderTable(data) {
+                const container = document.getElementById('hot');
+                const columns = data.length > 0 ? Object.keys(data[0]) :[];
+                const hotData = data.map(row => columns.map(col => row[col]));
+
+
+                if (hotInstance) {
+                    hotInstance.destroy()
+                }
+
+
+                hotInstance= new Handsontable(container, {
+                    data: hotData, 
+                    colHeaders: columns.map(col => col.replace(/_/g, ' ').toUpperCase()), 
+                    rowHeaders: true, 
+                    stretcghH: 'all', 
+                    width: '100%', 
+                    height: 400, 
+                    licenseKey: 'non-commercial-and-evaluation', 
+                    manualColumnResize: true, 
+                    manualRowResize: true, 
+                    filters: true,
+                    dropdownMenu: true, 
+                });
+            }  
+
+             
+            async function executeCode() {
+                const userCode = window.editor.getValue(); 
+
+                if (!dataset || dataset.length === 0) {
+                    alert('Please upload a dataset first.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('http://localhost:3001/run-js', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ userCode, dataset })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to execute code');
+                    }
+
+                    const data = await response.json();
+                    document.getElementById('result').innerText = 'Result: ' + JSON.stringify(data.result, null, 2);
+
+                    alert('Code executed successfully! Check the console for results.');
+                    console.log('Result:', data.result);
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error: ' + error.message);
+                }
+            }
+            function sortascending() {
+                if (!dataset || dataset.length === 0) {
+                    alert('Please upload a dataset first.');
+                    return;
+                }
+                dataset.sort((a, b) => a.price - b.price);
+                renderTable(dataset); 
+            }
+            function sortdescending() {
+                if (!dataset || dataset.length === 0) {
+                    alert('Please upload a dataset first.');
+                    return;
+                }
+                dataset.sort((a, b) => b.price - a.price); 
+                renderTable(dataset); 
+            }
+            function csvToJson(csv){
+                const lines= csv.trim().split('\n');
+                const headers= lines[0].split(',').map(h=> h.trim());
+                return lines.slice(1).map(line=>{
+                    const values= line.split(',').map(v=> v.trim());
+                    const obj={};
+                    headers.forEach((header, index)=>{
+                        obj[header]= values[index];
+                    });
+                    return obj;
+                });
+            }
+            function populateColumnSelector(data) {
+                const selector = document.getElementById('columnSelector');
+                selector.innerHTML = ''; // Clear previous options
+
+                if(!data || data.length === 0) {
+                    return;
+                }
+                Object.keys(data[0]).forEach(key => {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.text= key;
+                    selector.appendChild(option);
+                });
+            }
+            
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const sendButton = document.getElementById('send-button');
+    async function sendMessage(){
+      const userMessage = chatInput.value.trim();
+      if(!userMessage) return;
+      addMessageToChat("You", userMessage);
+      chatInput.value = ""; // Clear input field
+      try{
+        const response = await fetch('http://localhost:5001/process-input',{
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+
+          },
+          body: JSON.stringify({ input: userMessage })
+
+        });
+        const data = await response.json();
+        addMessageToChat("Gemini", JSON.stringify(data, null, 2));
+      } catch (error) {
+        console.error("Error sending message:", error);
+        addMessageToChat("Gemini", "Error: Unable to get response.");
+      }
+    }
+    // Function to add message to chat window
+    function addMessageToChat(sender, message){
+      const messageElement = document.createElement('div');
+      messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
+      chatMessages.appendChild(messageElement);
+      chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
+    }
+    //scrolling to the bottom of the chat window
+    sendButton.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', (event) => {
+      if (event.key === 'Enter') {
+        sendMessage();
+      }
+    });
+    // use y=mx+b to find the slope and intercept of the line and use it to predict the next value
+    function runlinearregression(){
+                //get the selected column from the dropdown
+                const col = document.getElementById('columnSelector').value;
+                //extract the values from the dataset and remove the non-numeric values
+                const values = dataset
+                            .map(row => Number(row[col]))
+                            .filter(v => !isNaN(v));
+                if(values.length < 2){
+                    alert('Not enough data to run linear regression. Please select a different column.');
+                    return;
+                }
+                const x = values.map((_, i) => i + 1); // x indices
+                const y = values; // y values
+                const meanx = x.reduce((a, b) => a + b, 0) / x.length;
+                const meany = y.reduce((a, b) => a + b, 0) / y.length;
+                let num = 0; den = 0;
+                for (let i = 0; i < x.length; i++) {
+                    num += (x[i] - meanx) * (y[i] - meany);
+                    den += (x[i] - meanx) ** 2;
+                }
+                const m = num / den; // slope
+                const b = meany - m * meanx; // y-intercept
+                const nextX = x.length + 1; // next x value
+                const predicted = m * nextX + b; // predicted y value
+                  alert(
+                        `Linear Regression on "${col}"\n` +
+                        `Predicted next value: ${predicted.toFixed(2)}`
+                    );
+            }
+            // find the mean of all values in the selected column and return it as the average next value
+    function runhistoricalaverage(){
+                //get the selected column from the dropdown
+                const col = document.getElementById('columnSelector').value;
+                //extract the values from the dataset and remove the non-numeric values
+                const values = dataset
+                            .map(row => Number(row[col]))
+                            .filter(v => !isNaN(v));
+                if(values.length < 2){
+                    alert('Not enough data to run historical average. Please select a different column.');
+                    return;
+                }
+                const sum = values.reduce((a, b) => a + b, 0);
+                const avg = sum / values.length;
+                alert(
+                        `Historical Average on "${col}"\n` +
+                        `Predicted next value: ${avg.toFixed(2)}`
+                    );
+            }
+    /*runs by clusttering the data making sure it goes to the nearest cluster it should go to
+    repeat until the clusters are stable without them changing anymore based on calculating
+    the average of the clusters and moving values this is a kmeans clustering*/
+            function runclustering(){
+                //get the selected column from the dropdown
+                const col = document.getElementById('columnSelector').value;
+                //extract the values from the dataset and remove the non-numeric values
+                const values = dataset
+                            .map(row => Number(row[col]))
+                            .filter(v => !isNaN(v));
+                if(values.length < 2){
+                    alert('Not enough data to run clustering. Please select a different column.');
+                    return;
+                }
+                // Perform clustering (e.g., K-means) on the selected column
+                // This is a placeholder for actual clustering logic
+                let c1 = values[0];
+                let c2 = values[1];
+                let changes = true;
+                let clusters = [];
+                while (changes){
+                    clusters = [[], []];
+                    values.forEach(v => {
+                         if (Math.abs(v - c1) < Math.abs(v - c2)) {
+                            clusters[0].push(v);
+                        } else {
+                            clusters[1].push(v);
+                        }
+                    });
+                    const newC1 = clusters[0].reduce((a, b) => a + b, 0) / clusters[0].length;
+                    const newC2 = clusters[1].reduce((a, b) => a + b, 0) / clusters[1].length;
+                    changes = (newC1 !== c1 || newC2 !== c2);
+                    c1 = newC1;
+                    c2 = newC2;
+                }
+                alert(
+                        `Clustering on "${col}"\n` +
+                        `Cluster 1 (center ${c1.toFixed(2)}): [${clusters[0].join(', ')}]\n` +
+                        `Cluster 2 (center ${c2.toFixed(2)}): [${clusters[1].join(', ')}]`
+                    );
+            }
+            // works by finding the average of all values in the selected column if its greater than 2 standard deviations from the mean its an anomaly
+            function runanomalydetection(){
+                const col = document.getElementById('columnSelector').value;
+                const values = dataset
+                            .map(row => Number(row[col]))
+                            .filter(v => !isNaN(v));
+                if(values.length < 2){
+                    alert('Not enough data to run anomaly detection. Please select a different column.');
+                    return;
+                }
+                const mean = values.reduce((a, b) => a + b, 0) / values.length;
+                const std = Math.sqrt(values.reduce((a, b) => a + (b - mean) ** 2, 0) / values.length);
+                const anomalies = values.filter(v => Math.abs(v - mean) > 2 * std);
+                alert(
+                        `Anomaly Detection on "${col}"\n` +
+                       `Mean: ${mean.toFixed(2)}, Std Dev: ${std.toFixed(2)}\n` +
+                        (anomalies.length > 0 ?
+                        `Anomalies: [${anomalies.join(', ')}]` :
+                        `No anomalies detected.`)
+                    );
+            }
+    
+    
+
+
+        </script>
+</body>
+</html>
+    
+
+    
