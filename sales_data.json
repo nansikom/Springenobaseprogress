@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "customer_name": "Alice Johnson",
+    "sales_amount": 1500.75,
+    "product": "Laptop",
+    "quantity": 2,
+    "sale_date": "2025-01-10",
+    "region": "North America",
+    "sales_rep": "Bob Martin"
+  },
+  {
+    "id": 2,
+    "customer_name": "David Williams",
+    "sales_amount": 3000.0,
+    "product": "Smartphone",
+    "quantity": 1,
+    "sale_date": "2025-01-12",
+    "region": "Europe",
+    "sales_rep": "Sara Lee"
+  },
+  {
+    "id": 3,
+    "customer_name": "Emma Davis",
+    "sales_amount": 200.5,
+    "product": "Headphones",
+    "quantity": 3,
+    "sale_date": "2025-01-14",
+    "region": "Asia",
+    "sales_rep": "John Doe"
+  },
+  {
+    "id": 4,
+    "customer_name": "Chris Brown",
+    "sales_amount": 1200.0,
+    "product": "Tablet",
+    "quantity": 5,
+    "sale_date": "2025-01-16",
+    "region": "North America",
+    "sales_rep": "Bob Martin"
+  },
+  {
+    "id": 5,
+    "customer_name": "Grace Green",
+    "sales_amount": 4500.0,
+    "product": "Laptop",
+    "quantity": 1,
+    "sale_date": "2025-01-18",
+    "region": "Europe",
+    "sales_rep": "Sara Lee"
+  },
+  {
+    "id": 6,
+    "customer_name": "Michael White",
+    "sales_amount": 1200.5,
+    "product": "Smartwatch",
+    "quantity": 4,
+    "sale_date": "2025-01-20",
+    "region": "Australia",
+    "sales_rep": "John Doe"
+  }
+]
